@@ -1,0 +1,89 @@
+#include <iostream>
+#include <Eigen/Dense>
+#include<cmath>
+#include <fstream>
+#include <vector>
+#include<iomanip> //小数精度
+
+using namespace std;
+
+int main()
+{
+	ifstream file1("D:\\Codes\\VisualStudio\\lm1.csv");
+	ifstream file2("D:\\Codes\\VisualStudio\\lm2.csv");
+	ifstream file3("D:\\Codes\\VisualStudio\\lm3.csv");
+	ifstream file4("D:\\Codes\\VisualStudio\\lm4.csv");
+
+	//if (!file1.is_open()) {
+	//	cerr << "无法打开文件" << endl;
+	//	return 1;
+	//}
+
+	vector<double> data1; // 使用一维向量存储CSV数据
+	vector<double> data2;
+	vector<double> data3;
+	vector<double> data4;
+
+	int N = 2;
+
+	double cell1;
+	double cell2;
+	double cell3;
+	double cell4;
+
+	while (file1 >> cell1) {
+		data1.push_back(cell1);
+	}
+	while (file2 >> cell2) {
+		data2.push_back(cell2);
+	}
+	while (file3 >> cell3) {
+		data3.push_back(cell3);
+	}
+	while (file4 >> cell4) {
+		data4.push_back(cell4);
+	}
+
+	Eigen::Matrix2d A(2, 2);
+	Eigen::Vector2d b(2, 1);
+
+	vector<double> a, D;
+	double Omega_n = 60;//hz
+	double Delta_t = 0.001;//s
+	vector<double> Ne;
+
+	int i = 0;
+
+	for (i = 0; i < N; i++) {
+
+		double x1 = data1[i] , 
+			x2 =  data2[i] ,
+			x3 = data3[i],
+			x4 =  data4[i] ;
+	
+		A(0, 0) = x1;
+		A(0, 1) = x2;
+		A(1, 0) = x3;
+		A(1, 1) = x4;
+
+		b(0, 0) = x3 + x1;
+		b(1, 0) = x4 + x2;
+		cout << "Here is the matrix A:\n" << A << endl;
+		cout << "Here is the vector b:\n" << b << endl;
+
+		
+
+		Eigen::Vector2d x = A.colPivHouseholderQr().solve(b);
+		a[i] = x(0, 0);
+		D[i] = x(1, 0) / (2 + a[i]);
+		Ne[i] = pow(cos(-a[i] / 2), -1) / (Omega_n * Delta_t);
+
+		cout << "The a is:\n" << a[i] << endl;
+		cout << "The D is:\n" << D[i] << endl;
+		cout << "The Ne is:\n" << Ne[i] << endl;
+
+	}
+
+
+	
+}
